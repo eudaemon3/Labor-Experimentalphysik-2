@@ -1,72 +1,75 @@
-import os
 import numpy as np
 import matplotlib.pyplot as plt
-from scipy.optimize import curve_fit
-from scipy.signal import find_peaks, savgol_filter
-import scienceplots
+import matplotlib.ticker as ticker
 
-plt.style.use('science')
-plt.rcParams.update({'font.size': 14})
+# -------------------------------------------------------
+# Messdaten
+# -------------------------------------------------------
 
-def get_all_csv() -> list[str]:
-    files = sorted([i for i in os.listdir(os.getcwd() + '/data') if i[-4:] == '.csv'])
-    if not files:
-        print(f"Keine .csv Dateien gefunden.")
-        return []
+# Forward (Durchlass)
+I_forward = np.array([12.95, 28.0, 42.52, 57.29, 71.7, 82.4, 93.8, 102.2,
+                      111.9, 122.5, 132.3, 142.1, 151.9, 161.6, 172.3, 181.8, 191.9])  # mA
+U_forward = np.array([0.698, 0.732, 0.750, 0.763, 0.773, 0.779, 0.784, 0.788,
+                      0.792, 0.796, 0.799, 0.802, 0.805, 0.808, 0.810, 0.813, 0.815])  # V
 
-    return list(files)
+# Reverse (Sperrrichtung)
+U_reverse = np.array([4.813, 11.16, 18.86, 25.16, 31.59, 35.65, 39.71])  # V
+I_reverse = np.array([0.001, 0.0014, 0.0018, 0.0022, 0.0025, 0.0027, 0.003])  # µA
 
-def extract_csv(filepath:str, skipheader:int=12)->tuple:
-    with open(f'data/{filepath}', 'r', errors='ignore') as f:
-        lines = f.readlines()
 
-    channels = lines[10].split(',')[1:]
-    units = lines[11].split(',')
-    if len(channels) not in [1, 2]:
-        return False
+# -------------------------------------------------------
+# Formatter (wie im Beispiel)
+# -------------------------------------------------------
 
-    try:
-        data = np.genfromtxt(f'data/{filepath}', delimiter=',', skip_header=skipheader)
-    except Exception as e:
-        print(f"[ERROR] Datei {os.path.basename(filepath)}: Fehler beim Einlesen: {e}")
-        return False
+def diode_ytick_formatter(value, pos):
+    if value >= 0:
+        return f"{value:.0f} mA"
+    else:
+        # Umrechnung nA = µA * 1000
+        nA = -value * 1000
+        return f"-{nA:.0f} nA"
     
-    time = data[: , 0]
-    ch = []
-    for j in range(len(channels)):
-        ch.append(data[:, j+1])
-    return time, ch, units
 
-files = get_all_csv()
-AXES = {
-    2 : (0, 0),
-    3 : (0, 1),
-    4 : (1, 0)
-}
-fig, axs = plt.subplots(2,2, figsize=(11, 7))
+    
+formatter = ticker.FuncFormatter(diode_ytick_formatter)
 
-tilte = ['Kriechfall', 'Grenzfall', 'Schwingfall']
-color = ['blue', 'green', 'red']
-lines = []
-for i,j in enumerate([2, 3, 4]):
-    x,y = AXES[j]
-    time, channels, units = extract_csv(files[j])
-    l, = axs[x][y].plot(time, channels[0], color=color[i])
-    l.set_label(f'Messung {i+1}: {tilte[i]}')
-    axs[x][y].grid(True)
-    lines.append(l)
 
-axs[0][0].set_ylabel(r'Spannung $U$ / V', fontsize=18)
-axs[1][0].set_ylabel(r'Spannung $U$ / V', fontsize=18)
+# -------------------------------------------------------
+# Plot Setup
+# -------------------------------------------------------
 
-axs[0][1].set_xlabel(r'Zeit $t$ / s', fontsize=18)
-axs[1][0].set_xlabel(r'Zeit $t$ / s', fontsize=18)
-#axs[0][0].set_xlabel(r'Zeit $t$ / s', fontsize=18)
+figure = plt.figure(1, (14, 8))
+axe = plt.subplot(111)
 
-axs[1][1].axis('off')
-axs[1][1].legend(handles=lines, fontsize=20, loc='center left')
+axe.set_title("I-U-Diodenkennlinie aus Messdaten")
+axe.set_xlabel("Spannung U (V)")
+axe.set_ylabel("Strom I (mA / nA)")
+
+axe.grid(True)
+
+# Achsen wie im Beispiel
+axe.axhline(0, color='black', linewidth=1)
+axe.axvline(0, color='black', linewidth=1)
+
+# Schattierte Bereiche
+#axe.axvspan(-40, 0, facecolor='green', alpha=0.15)
+#axe.axvspan(0, 0.7, facecolor='blue', alpha=0.10)
+#axe.axvspan(0.7, 2, facecolor='blue', alpha=0.20)
+
+# Bereichslimits
+axe.set_xlim(-40, 2)
+axe.set_ylim(-4, 220)  # mA oben, nA umgerechnet unten
+
+
+axe.plot(U_forward, I_forward, 'o-', label="Durchlassrichtung")
+
+I_rev_plot = -I_reverse * 1000    # µA → nA, dann negativ
+U_rev_plot = -U_reverse
+
+axe.plot(U_rev_plot, I_rev_plot, 's-', label="Sperrrichtung")
+
+axe.yaxis.set_major_formatter(formatter)
+
+axe.legend()
 plt.tight_layout()
-
 plt.show()
-
-
