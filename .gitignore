@@ -1,6 +1,7 @@
 .venv/
 .env
 .directory
+.syncthing*
 Experimentalphysik2.code-workspace
 
 14_OperationsVerstärker/data/data2
