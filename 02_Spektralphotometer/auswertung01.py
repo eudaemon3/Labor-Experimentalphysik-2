@@ -5,7 +5,7 @@ from collections import defaultdict
 from plot_lib import load_measurement, plot_visible_spectrum
 
 plt.style.use('science')
-plt.rcParams.update({'font.size': 14})
+plt.rcParams.update({'font.size': 15})
 
 folder = "02_Spektralphotometer/data/Messung01"
 data = {n: load_measurement(n, folder) for n in range(1, 6)}
@@ -67,19 +67,14 @@ for c in colors:
         alpha=0.4
     )
 
-ax1.set_xlabel(r"Wellenlänge $\lambda$ / nm", fontsize=16)
-ax1.set_ylabel(r"Transmission $T$ / 1", fontsize=16)
-ax1.legend(frameon=True, fontsize=16, ncols=3, loc='upper center')
+ax1.set_xlabel(r"Wellenlänge $\lambda$ / nm", fontsize=18)
+ax1.set_ylabel(r"Transmission $T$ / 1", fontsize=18)
+ax1.legend(frameon=True, fontsize=17, ncols=3, loc='upper center')
 ax1.set_ylim(-0.075, 1.15)
 ax1.set_xlim(380, 780)
 ax1.grid(True)
 
 plt.tight_layout()
-
-# -----------------------
-# FIGURE 2: Extinction
-# -----------------------
-# fig2, ax2 = plt.subplots(figsize=(6, 4))
 
 plot_visible_spectrum(
     ax=ax2, show_edge=False,
@@ -96,9 +91,9 @@ ax2.plot(lambda_axis, E_mean["RotBlau"], label=r"$E_{RB}$", color="rebeccapurple
 #E_sum = E_mean["Rot"] + E_mean["Blau"]
 #ax2.plot(lambda_axis, E_sum, label=r"$E_R$ + $E_B$", color="black", linestyle="-")
 
-ax2.set_xlabel(r"Wellenlänge $\lambda$ / nm", fontsize=16)
-ax2.set_ylabel(r"Extinktion $E$ / 1",fontsize=16)
-ax2.legend(frameon=True, fontsize=16)
+ax2.set_xlabel(r"Wellenlänge $\lambda$ / nm", fontsize=18)
+ax2.set_ylabel(r"Extinktion $E$ / 1",fontsize=18)
+ax2.legend(frameon=True, fontsize=17)
 ax2.set_ylim(-0.29, 6)
 ax2.set_xlim(380, 780)
 ax2.grid(True)
