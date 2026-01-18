@@ -1,7 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import scienceplots
-from plot_lib import load_measurement_var
+from plot_lib import load_measurement_var, plot_visible_spectrum
 from scipy.signal import find_peaks
 from scipy.optimize import curve_fit
 
@@ -49,12 +49,14 @@ print(f"Dicke d = {d} pm {dd} mu m")
 # ------------------------------------------------------------------
 fig1, ax1 = plt.subplots(1,1, figsize=(6, 4))
 
-ax1.plot(lam_slice, T_slice, color='tab:orange', linewidth=1.1, label='Signal')
-ax1.scatter(lam_slice[peaks], T_slice[peaks], marker='d', color='blue', label='detektierte Peaks')
+plot_visible_spectrum(ax1, 700, 720, 0.882, 0.8835, show_edge=False, alpha_def=0.7)
+
+ax1.plot(lam_slice, T_slice, color='blue', linewidth=1.1, label='Signal')
+ax1.scatter(lam_slice[peaks], T_slice[peaks], marker='d', color='tab:orange', label='detektierte Peaks')
 ax1.set_xlabel(r"Wellenlänge $\lambda$ / nm", fontsize=16)
 ax1.set_ylabel(r"Transmission $T$ / 1", fontsize=16)
-ax1.legend(frameon=True, fontsize=16, ncols=2, loc='lower center')
-ax1.set_ylim(0.89, 0.945)
+ax1.legend(frameon=True, fontsize=16, ncols=2, loc='lower center', bbox_to_anchor=(0.5, 0.07))
+ax1.set_ylim(0.882, 0.945)
 ax1.grid(True)
 plt.tight_layout()
 
