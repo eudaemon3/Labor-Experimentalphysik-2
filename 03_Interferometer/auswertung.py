@@ -1,75 +1,119 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.ticker as ticker
+import os
+from lib import analyze_interference_image, slit_measure_to_mm
+import scienceplots
 
-# -------------------------------------------------------
-# Messdaten
-# -------------------------------------------------------
+plt.style.use('science')
+plt.rcParams.update({'font.size': 14})
 
-# Forward (Durchlass)
-I_forward = np.array([12.95, 28.0, 42.52, 57.29, 71.7, 82.4, 93.8, 102.2,
-                      111.9, 122.5, 132.3, 142.1, 151.9, 161.6, 172.3, 181.8, 191.9])  # mA
-U_forward = np.array([0.698, 0.732, 0.750, 0.763, 0.773, 0.779, 0.784, 0.788,
-                      0.792, 0.796, 0.799, 0.802, 0.805, 0.808, 0.810, 0.813, 0.815])  # V
+# ROI: (x, y, width, height)
+ROI = (50, 450, 950, 90)
 
-# Reverse (Sperrrichtung)
-U_reverse = np.array([4.813, 11.16, 18.86, 25.16, 31.59, 35.65, 39.71])  # V
-I_reverse = np.array([0.001, 0.0014, 0.0018, 0.0022, 0.0025, 0.0027, 0.003])  # µA
+folder_path = "03_Interferometer/data/"
+slit_width_measure = [(3,5), (4,0), (3,10), (2,20), (1,30), (0,40)]
+delta_width = 0.01 #mm
 
 
-# -------------------------------------------------------
-# Formatter (wie im Beispiel)
-# -------------------------------------------------------
+if __name__ == "__main__":
 
-def diode_ytick_formatter(value, pos):
-    if value >= 0:
-        return f"{value:.0f} mA"
-    else:
-        # Umrechnung nA = µA * 1000
-        nA = -value * 1000
-        return f"-{nA:.0f} nA"
+    image_files = sorted([
+        f for f in os.listdir(folder_path)
+        if f.lower().endswith((".jpg", ".jpeg", ".png"))
+    ])
+    if not image_files:
+        raise RuntimeError("Keine Bilddateien im angegebenen Ordner gefunden.")
+
+    curve_case = [0, 2, 2, 1, 1, 1]
+    width = [slit_measure_to_mm(i) for i in slit_width_measure]
+
+    image_files = np.array(image_files)
+    curve_case = np.array(curve_case)
+    width = np.array(width)
+
+    sort_idx = np.argsort(width)[::-1]
+
+    image_files = image_files[sort_idx]
+    curve_case = curve_case[sort_idx]
+    width = width[sort_idx]
+
     
 
-    
-formatter = ticker.FuncFormatter(diode_ytick_formatter)
+    fig, axes = plt.subplots(3, 2, figsize=(10, 8), sharex=False, sharey=False)
+    axes = axes.flatten()
 
+    intensity_handle = None
+    min_handle = None
+    max_handle = None
 
-# -------------------------------------------------------
-# Plot Setup
-# -------------------------------------------------------
+    for i, filename in enumerate(image_files):
+        ax = axes[i]
+        image_path = os.path.join(folder_path, filename)
 
-figure = plt.figure(1, (14, 8))
-axe = plt.subplot(111)
+        data = analyze_interference_image(
+            image_path=image_path,
+            roi_params=ROI,
+            curve_case=curve_case[i],
+            _show_img=False
+        )
 
-axe.set_title("I-U-Diodenkennlinie aus Messdaten")
-axe.set_xlabel("Spannung U (V)")
-axe.set_ylabel("Strom I (mA / nA)")
+        if curve_case[i] == 1:
+            x_pixels, intensity, min_ind, max_ind, contrast = data  # type: ignore
 
-axe.grid(True)
+            min_handle = ax.scatter(
+                x_pixels[min_ind],
+                intensity[min_ind],
+                color="crimson",
+                marker='d',
+                label='detected Minima'
+            )
 
-# Achsen wie im Beispiel
-axe.axhline(0, color='black', linewidth=1)
-axe.axvline(0, color='black', linewidth=1)
+            max_handle = ax.scatter(
+                x_pixels[max_ind],
+                intensity[max_ind],
+                color="rebeccapurple",
+                marker='o',
+                label='detected Maxima'
+            )
+        else:
+            x_pixels, intensity, contrast = data  # type: ignore
 
-# Schattierte Bereiche
-#axe.axvspan(-40, 0, facecolor='green', alpha=0.15)
-#axe.axvspan(0, 0.7, facecolor='blue', alpha=0.10)
-#axe.axvspan(0.7, 2, facecolor='blue', alpha=0.20)
+        intensity_handle, = ax.plot(
+            x_pixels,
+            intensity,
+            'b-',
+            label='Intensity profile'
+        )
 
-# Bereichslimits
-axe.set_xlim(-40, 2)
-axe.set_ylim(-4, 220)  # mA oben, nA umgerechnet unten
+        """
+        ax.text(
+            0.85,
+            0.85,
+            rf"$K \approx {contrast:.2f}$",
+            transform=ax.transAxes,
+            ha="center",
+            va="top",
+            fontsize=16
+        )
+        """
+        
+        ax.set_title(rf"Breite $b = ({width[i]:.3f} \pm {delta_width:.3f})\,\mathrm{{mm}}$", fontsize=16)
 
+        if i in [4,5]:
+            ax.set_xlabel(r"Pixel $p$ / 1", fontsize=16)
+        if i in [0, 2, 4]:
+            ax.set_ylabel(r"Intensität $\frac{I}{I_\text{max}}$ / 1",fontsize=16)
+        ax.grid(True)
+        ax.set_ylim(-0.1, 1.1)
+    # Gemeinsame Legende unterhalb der Plots
+    fig.legend(
+        handles=[intensity_handle, min_handle, max_handle],
+        labels=['Intensitäts Profil', 'detektierte Minima', 'detektierte Maxima'],
+        loc='lower center',
+        ncol=3,
+        frameon=True,
+        fontsize=16
+    )
 
-axe.plot(U_forward, I_forward, 'o-', label="Durchlassrichtung")
-
-I_rev_plot = -I_reverse * 1000    # µA → nA, dann negativ
-U_rev_plot = -U_reverse
-
-axe.plot(U_rev_plot, I_rev_plot, 's-', label="Sperrrichtung")
-
-axe.yaxis.set_major_formatter(formatter)
-
-axe.legend()
-plt.tight_layout()
-plt.show()
+    plt.tight_layout(rect=[0, 0.06, 1, 1]) # type: ignore
+    plt.show()
