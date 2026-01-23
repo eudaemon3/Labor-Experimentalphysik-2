@@ -76,107 +76,110 @@ Als nächstes analysiere den vorgegebenen code und die Inhaltlichen Anforderunge
 
 # Promt für LLM
 
-Rolle & Ziel: Du bist ein wissenschaftlicher Assistent, spezialisiert auf das Verfassen von Physik-Laborberichten auf Hochschulniveau. Deine Aufgabe ist es mir beim Schreiben meines aktuellen Laborberichts zu helfen. Du sollst dazu das Kapitel Auswertung schreiben. Im letzten Schritt soll die Auswertung für den vierten Versuch "Farbeindruck verschiedener Proben" verfasst werden.
+Rolle & Ziel: Du bist ein wissenschaftlicher Assistent, spezialisiert auf das Verfassen von Physik-Laborberichten auf Hochschulniveau. Deine Aufgabe ist es mir beim Schreiben meines aktuellen Laborberichts Interferometer zu helfen. Du sollst dazu das Kapitel Auswertung schreiben. Im diesem letzten Schritt soll die Auswertung für den vierten Versuch verfasst werden.
 Input: 
-1. Bestehender Laborbericht Spektralphotometer:
-2. Python code zur Auswertung der Aufgabe bestehend aus zwei Teilen: 
+1. Bestehender Laborbericht mit Bildern.
+2. Python code zur Auswertung der Aufgabe. 
 
 Anforderungen an den Output:
-* Schreibe mir das Kapitel "Farbeindruck verschiedener Proben" für den aktuellen Bericht. 
-* Verwende die bestehende Analyse und analysiere den bestehenden Bericht und übernimm den Schreibstil, die Struktur, den Detaillierungsgrad und die Länge der Unterkapitel.
-* Verwende dieselbe wissenschaftliche Ausdrucksweise, denselben Aufbau (Absätze, Unterüberschriften, Formatierung) und ein ähnliches Sprachniveau. Achte darauf keine Wortwiederholungen zu verwenden.
+* Schreibe mir das vierte Kapitel für den aktuellen Bericht. Gib dem Kapitel eine passende Überschrift.
+* Analysiere den bestehenden Bericht und baue auf der bestehenden Analyse auf. Übernimm den Schreibstil, die Struktur, den Detaillierungsgrad und die Länge der analysierten Kapitel.
+* Verwende dieselbe wissenschaftliche Ausdrucksweise, denselben Aufbau (Absätze, Unterüberschriften, Formatierung) und ein ähnliches Sprachniveau. Achte darauf keine Wortwiederholungen zu verwenden und dass der Text zum rest des Berichtes passt.
 * Die Formatierung der Tabellen und Bilder sind ebenfalls aus den Berichten zu entnehmen. Wichtig ist immer eine passende caption der Figuren und Tabellen zu verwenden. Subindizes sind als text zu formatieren $X_\text{y}$ und alle Messwerte sind mit einer Unsicherheit anzugeben.
 * Falls inhaltliche Unsicherheiten bestehen, formuliere plausible und physikalisch korrekte Annahmen.
+* Im bestehenden Bericht sind bereits alle bilder eingefügt. Die captions dieser Figuren sind mithilfe der inhaltlichen Angaben zu überarbeiten und auszubessern.
 
-Inhalt: Für den Vierten Versuch sollen lediglich die Spektren verschiedener Messungen verglichen werden und dadurch der Farbeindruck erklährt werden. Die genaue Aufgabe ist es: "qualitativ möglich, aus photospektroskopischen Daten den entsprechenden Farbeindruck zu erklären". Erklähre dazu kurz dass in einer Figur links die Rohdaten der Messung von MEtylenblau und den Farbfiltern gemeinsam angeführt sind und rechts ein Vergleich der berechneten Transmissionen $T$ zu erkennen ist. Gib der Abbildung dann noch eine passende caption. Dies ist alles zur Auswertung. 
-Schreibe ebenfalls die Diskussion des Kapitels neu und beschreibe mehr, dass beim blauen Farbfilter und MEtylenbalu eine große Transmission im blauen bereich z erkennen ist. Beim roten Farbfilter entsprechend im blauen Wellenlängenbereich keine Transmission dafür stark im roten. Die rohdaten zeigen das identische Verhalten an, allerdings sind die relativen Anteile im Transmissionsspektrum viel besser erkennbar. Die Länge der Diskussion sollte aber in etwa gleich lang sein wie der bestehnde Teil, vielleicht um 20% länger. Auf jeden Fall passend zum restlichen Bericht.   
+Inhalt: Für den vierten Versuch soll die Größe der Lichtquelle bestimmt werden, bei der für einen bestimmten Abstand d vom Doppeltspalt das Licht noch räumlich kohärent ist. Dazu wird für die drei verfügbaren Spaltabstände des Doppelspalts jeweils das ertste Kontrastminimum durch verstelle nder Spaltbreite $w$ ermittelt. Die 3 zugehörigen Interferenzmuster sind in der ersten Abbildung angeführt. Der markierte Bereich dient hier nur zu visualisierungs Zwecken.
+Als nächstes werden die Messpunkte und der Theoretisch erwartete Verlauf in einem Diagramm w(d) dargestellt. Die Unsicherheit für w ergibt sich aus dem in Kapitel 1 angeführen Argumenten der Nullpunktverschiebung.
 
 
 Outputformat:
 * Gib den fertigen Kapiteltext als zusammenhängenden, klar strukturierten Berichtsteil als Latex code aus.
 * Keine Meta-Kommentare oder Erklärungen, nur der wissenschaftliche Text.
+* Wichtiger Hinweiß: Die Diskussion soll vorerst nicht geschrieben werden. Fokusiere dich nur auf die Auswertung
 
-Verwende die bestehende Analyse der alten Berichte und verfasse das neue Kapitel basierend auf dieser.  
-Betrachte ebenfalls den bestehenden Bericht um das neue Kapitel möglicht passend in den Beericht einzufügen. Als nächstes betrachte den vorgegebenen code und die Inhaltlichen Anforderungen und schreibe danach das Kapitel gemäß der neuen Aufgabe.
+Beginne mir einer Analyse des bestehenden Berichts und erweitere die bestehende Analyse! Wichtige Punkte die du übernehmen kannst sind:
+* Wortwahl, Satzlänge und Übergänge zu übernehmen,
+* typische Formulierungen zu imitieren,
+* Tabellen- oder Formelstrukturen stilistisch nachzubilden.
+Als nächstes analysiere den vorgegebenen code und die Inhaltlichen Anforderungen und schreibe danach das Kapitel gemäß der neuen Aufgabe.
 
-```python
+```python Skript
 import numpy as np
+import os
+import cv2
 import matplotlib.pyplot as plt
+from lib import slit_measure_to_mm
+from matplotlib.patches import Rectangle
 import scienceplots
-from plot_lib import load_measurement, load_measurement_var, plot_visible_spectrum
 
 plt.style.use('science')
-plt.rcParams.update({'font.size': 15})
+plt.rcParams.update({'font.size': 14})
 
-# Farbfilter
-folder_filter = "02_Spektralphotometer/data/Messung01"
-data_f = load_measurement(1, folder_filter)
-lam_f, I0_f = data_f["Referenz"]
-IT_f_blau = data_f["Blau"][1]
-IT_f_rot  = data_f["Rot"][1]
+folder = "03_Interferometer/data/Versuch04/"
+ROI = (50, 425, 950, 130)
+slit_width = [(4,35), (3,5), (1,4)]
+slit_width = list(map(slit_measure_to_mm, slit_width))
+delta_width = 0.1 #mm
 
-# Methylenblau
-folder_methyl = "02_Spektralphotometer/data/Messung03"
-data_m = load_measurement_var(1, folder_methyl, "methyl")
-lam_m, I0_m = data_m["Referenz"]
-IT_m = data_m["Blau"][1]
+d_dist = np.array([0.13, 0.23, 0.43]) #mm
+lam = 0.000633 #mm
+f1 = 300 #mm
 
-# Transmission
-T_f_blau = IT_f_blau / I0_f
-T_f_rot  = IT_f_rot  / I0_f
-T_m      = IT_m / I0_m
+image_files = sorted([
+    f for f in os.listdir(folder)
+    if f.lower().endswith((".jpg", ".jpeg", ".png"))
+])
 
-# Plot 1
-# -------------------------------------------------------------------------------
+fig, axes = plt.subplots(1, 3, figsize=(8, 2.5))
 
-fig1, axes = plt.subplots(1,2, figsize=(10, 4.5))
+for i, filename in enumerate(image_files):
+    ax_img = axes[i]
+    img = cv2.imread(os.path.join(folder, filename), cv2.IMREAD_GRAYSCALE)
 
-ax = axes[0]
-plot_visible_spectrum(
-    ax=ax,
-    x_min=min(lam_f), x_max=max(lam_f),
-    y_min=-0.1, y_max=-0.07,
+    # ROI & Profil
+    x, y, w, h = ROI
+    roi = img[y:y+h, x:x+w] #type: ignore
+
+    ax_img.imshow(img, cmap="gray", aspect="auto")
+    ax_img.add_patch(Rectangle((x, y), w, h,
+                            edgecolor="red", facecolor="none", 
+                            linewidth=0.9, linestyle='--'))
+    ax_img.set_title(rf"Doppelspalt $d = {d_dist[i]:.2f}\,\mathrm{{mm}}$", fontsize=16)
+    ax_img.axis("off")
+
+plt.tight_layout()
+plt.show()
+
+w_theo = lambda d : f1*lam/(2*d)
+d_plot = np.linspace(0.1, 0.8, 1000)
+
+fig,ax = plt.subplots(1,1,figsize=(6,4))
+ax.errorbar(
+    d_dist,
+    slit_width,
+    yerr=delta_width,
+    marker='d',
+    linestyle='none',
+    capsize=5,
+    color='crimson',
+    label="Messdaten"
 )
 
-ax.plot(lam_f, IT_f_blau, color="tab:blue", linewidth=1.3, label=r"Filter blau")
-ax.plot(lam_f, IT_f_rot, color="crimson", linewidth=1.3, label=r"Filter rot")
-ax.plot(lam_m, IT_m, color="black", linewidth=1.3, label=r"Methylenblau")
-ax.plot(lam_f, I0_f, color="gray", linestyle="-", linewidth=1.3, label=r"Referenz")
+ax.plot(
+    d_plot,
+    w_theo(d_plot),
+    'b-',
+    label=r"Theorie: $w(d) = f_1\lambda / d$"
+)
 
-ax.set_xlabel(r"Wellenlänge $\lambda$ / nm", fontsize=17)
-ax.set_ylabel(r"Intensität $I$ / a.u.", fontsize=17)
+ax.set_xlabel(r"Spaltabstand $d$ / mm", fontsize=16)
+ax.set_ylabel(r"Breite $w$ / mm", fontsize=16)
+
 ax.grid(True)
+ax.legend(fontsize=16, frameon=True)
 
-# Legende unter der Achse
-handles, labels = ax.get_legend_handles_labels()
-leg1 = fig1.legend(
-    handles, labels,
-    loc="lower center",
-    bbox_to_anchor=(0.52, -0.01),
-    ncol=2, fontsize=17
-)
-
-ax2 = axes[1]
-
-plot_visible_spectrum(
-    ax=ax2, show_edge=False,
-    x_min=380, x_max=800,
-    y_min=-0.1, y_max=-0.07,
-    alpha_def=1
-)
-
-ax2.plot(lam_f, T_f_blau, color="tab:blue", linewidth=1.3, label="T (Filter blau)")
-ax2.plot(lam_f, T_f_rot, color="crimson", linewidth=1.3, label="T (Filter rot)")
-ax2.plot(lam_m, T_m, color="black", linewidth=1.3, label="T (Methylenblau)")
-
-ax2.set_xlabel(r"Wellenlänge $\lambda$ / nm", fontsize=17)
-ax2.set_ylabel(r"Transmission $T$ / 1", fontsize=17)
-ax2.set_xlim(400, 780)
-ax2.set_ylim(-0.1, 1.1)
-ax2.grid(True)
-
-
-plt.tight_layout(rect=[0, 0.15, 1, 1]) # type: ignore
-
+plt.tight_layout()
 plt.show()
 ```
+
